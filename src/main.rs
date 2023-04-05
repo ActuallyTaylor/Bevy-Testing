@@ -6,9 +6,9 @@ const MOVEMENT_SPEED: f32 = 0.05;
 const MOVEMENT_PER_KEY_MODIFIER: f32= 0.5;
 
 #[derive(Component)]
-struct Cubewoman;
+struct Player;
 
-fn add_people(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
+fn setup_world(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
     // camera
     commands.spawn(Camera3dBundle {
         projection: OrthographicProjection {
@@ -38,7 +38,7 @@ fn add_people(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut mate
             transform: Transform::from_xyz( 0.0, 0.5, 0.0),
             ..default()
         },
-        Cubewoman
+        Player
     ));
 
     // Lighting
@@ -66,10 +66,7 @@ fn add_people(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut mate
     });
 }
 
-fn move_cube(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Transform, With<Cubewoman>>,
-) {
+fn move_player(keyboard_input: Res<Input<KeyCode>>, mut query: Query<&mut Transform, With<Player>>, ) {
     let mut cube_transform = query.single_mut();
     let mut numb_keys: f32 = 0.0;
     let mut transform: Transform = Transform::from_xyz(0.0, 0.0, 0.0);
@@ -97,21 +94,20 @@ fn move_cube(
     if numb_keys == 0.0 {  return; }
 
     if numb_keys > 1.0 {
-        println!("Reducing Movement Speed");
         transform.translation.x *= (MOVEMENT_PER_KEY_MODIFIER);
         transform.translation.z *= (MOVEMENT_PER_KEY_MODIFIER);
     }
-    println!("Transforming Cube {:?}, with translation: {:?}", cube_transform.translation, transform.translation);
+
     cube_transform.translation += transform.translation;
 }
 
-pub struct HelloPlugin;
+pub struct TestWorldPlugin;
 
-impl Plugin for HelloPlugin {
+impl Plugin for TestWorldPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_startup_system(add_people)
-            .add_system(move_cube);
+            .add_startup_system(setup_world)
+            .add_system(move_player);
     }
 }
 
@@ -119,6 +115,6 @@ fn main() {
     println!("Starting App...");
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(HelloPlugin)
+        .add_plugin(TestWorldPlugin)
         .run();
 }
